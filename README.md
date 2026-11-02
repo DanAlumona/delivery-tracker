@@ -1,5 +1,7 @@
 # Open-source delivery tracker
 
+[![tests](https://github.com/DanAlumona/delivery-tracker/actions/workflows/tests.yml/badge.svg)](https://github.com/DanAlumona/delivery-tracker/actions/workflows/tests.yml)
+
 **Live dashboard:** https://danalumona.github.io/delivery-tracker/ (sample run, 90 days to 1 Nov 2026)
 
 Built by [Daniel Alumona](https://www.linkedin.com/in/danielalumona). Key numbers were spot-checked against GitHub (see [Sample run](#sample-run-90-days-to-1-nov-2026)).
@@ -24,6 +26,7 @@ It pulls issues, pull requests and milestones from 1-3 public GitHub repos and w
 | `dashboard_template.html` | The dashboard. `tracker.py` embeds the data into it as `docs/index.html`. |
 | `config.json` | Repos, time window, stale threshold, label patterns. |
 | `docs/` | Outputs from the last run (committed as a sample). |
+| `tests/` | Unit tests; no network needed. |
 
 ## Run it
 
@@ -106,6 +109,14 @@ Knowing what a metric can't tell you matters as much as the metric. In a real te
 4. **(60s) The status note.** Scroll to the draft. Show one item from each section and click through to the GitHub item it came from. Explain the rules behind "at risk".
 5. **(60s) Live change.** Run `python tracker.py --repos <any public repo> --gh-token`, refresh the page, and read the new status note.
 6. **(30s) What I'd do next.** Release-based "shipped" (tags), per-team label config, a trend line for review latency, and sending the note to Slack once a human has approved it.
+
+## Tests
+
+```bash
+python -m unittest -v
+```
+
+`tests/test_tracker.py` uses small hand-built data and a fake GitHub client, so it needs no network. It checks each metric definition (cycle-time window, review latency and coverage, stale and blocked, author share, weekly totals, age buckets), the status-note rules, de-duplication of fetched items, ignoring the author's own and post-merge reviews, and that issue titles can't break out of the dashboard's script tag. GitHub Actions runs them on Python 3.10, 3.12 and 3.13 on every push.
 
 ## Design choices
 
