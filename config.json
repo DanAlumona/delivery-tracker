@@ -1,0 +1,10 @@
+{
+  "repos": ["janestreet/core", "janestreet/base", "ocaml/dune"],
+  "window_days": 90,
+  "stale_days": 30,
+  "review_sample": 150,
+  "review_sample_unauthenticated": 10,
+  "cache_hours": 12,
+  "blocked_labels": "blocked|waiting|needs-repro|needs-rebase|needs-investigation|requires-upstream-pr|requires-opam-repo-changes|suspended|postponed",
+  "decision_labels": "needs-decision|requires-team-discussion|proposal|not-clear-what-next-step-is"
+}

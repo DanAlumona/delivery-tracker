@@ -1,0 +1,53 @@
+repo,week_starting,merged_prs,issues_opened,issues_closed
+All repos,2026-08-03,65,2,4
+All repos,2026-08-10,189,12,5
+All repos,2026-08-17,126,9,11
+All repos,2026-08-24,93,19,7
+All repos,2026-08-31,59,7,7
+All repos,2026-09-07,51,3,1
+All repos,2026-09-14,35,6,3
+All repos,2026-09-21,35,8,5
+All repos,2026-09-28,30,5,3
+All repos,2026-10-05,14,11,0
+All repos,2026-10-12,62,8,8
+All repos,2026-10-19,110,7,10
+All repos,2026-10-26,91,5,6
+janestreet/core,2026-08-03,0,0,0
+janestreet/core,2026-08-10,0,0,0
+janestreet/core,2026-08-17,0,0,0
+janestreet/core,2026-08-24,0,0,0
+janestreet/core,2026-08-31,0,0,0
+janestreet/core,2026-09-07,0,0,0
+janestreet/core,2026-09-14,0,0,0
+janestreet/core,2026-09-21,0,0,0
+janestreet/core,2026-09-28,0,0,0
+janestreet/core,2026-10-05,0,1,0
+janestreet/core,2026-10-12,0,0,0
+janestreet/core,2026-10-19,0,0,0
+janestreet/core,2026-10-26,0,0,0
+janestreet/base,2026-08-03,0,0,0
+janestreet/base,2026-08-10,0,0,0
+janestreet/base,2026-08-17,0,0,0
+janestreet/base,2026-08-24,0,0,0
+janestreet/base,2026-08-31,0,0,0
+janestreet/base,2026-09-07,0,0,0
+janestreet/base,2026-09-14,0,0,0
+janestreet/base,2026-09-21,0,0,0
+janestreet/base,2026-09-28,0,0,0
+janestreet/base,2026-10-05,0,3,0
+janestreet/base,2026-10-12,0,0,0
+janestreet/base,2026-10-19,0,0,0
+janestreet/base,2026-10-26,0,1,0
+ocaml/dune,2026-08-03,65,2,4
+ocaml/dune,2026-08-10,189,12,5
+ocaml/dune,2026-08-17,126,9,11
+ocaml/dune,2026-08-24,93,19,7
+ocaml/dune,2026-08-31,59,7,7
+ocaml/dune,2026-09-07,51,3,1
+ocaml/dune,2026-09-14,35,6,3
+ocaml/dune,2026-09-21,35,8,5
+ocaml/dune,2026-09-28,30,5,3
+ocaml/dune,2026-10-05,14,7,0
+ocaml/dune,2026-10-12,62,8,8
+ocaml/dune,2026-10-19,110,7,10
+ocaml/dune,2026-10-26,91,4,6

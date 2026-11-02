@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery Tracker</title>
+<!-- tracker.py fills in DATA below; this file is the template. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-0: #f4f4f2; --surface-1: #fcfcfb; --border: #e2e1dc;
+    --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #77766f;
+    --grid: #ecebe7; --series-1: #2a78d6; --series-2: #eb6834; --accent: #2a78d6;
+    --warn-bg: #fdf3e1; --warn-ink: #8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-0: #111110; --surface-1: #1a1a19; --border: #2e2e2c;
+      --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+      --grid: #2a2a28; --series-1: #3987e5; --series-2: #d95926; --accent: #6da7ec;
+      --warn-bg: #2f2512; --warn-ink: #f0c060;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-0: #111110; --surface-1: #1a1a19; --border: #2e2e2c;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+    --grid: #2a2a28; --series-1: #3987e5; --series-2: #d95926; --accent: #6da7ec;
+    --warn-bg: #2f2512; --warn-ink: #f0c060;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface-0); color: var(--text-primary);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; }
+  h1 { margin: 0; font-size: 24px; letter-spacing: -0.01em; }
+  h2 { margin: 0 0 4px; font-size: 16px; }
+  .sub { color: var(--text-secondary); margin: 4px 0 0; }
+  .muted { color: var(--text-muted); font-size: 13px; }
+  a { color: var(--accent); }
+  select { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border);
+           background: var(--surface-1); color: var(--text-primary); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 20px 0; }
+  .tile, .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .tile .label { color: var(--text-secondary); font-size: 13px; }
+  .tile .value { font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .tile .note { color: var(--text-muted); font-size: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 12px; margin-bottom: 12px; }
+  .chart { position: relative; height: 240px; margin-top: 8px; }
+  details { margin-top: 8px; font-size: 13px; }
+  summary { cursor: pointer; color: var(--text-secondary); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--text-secondary); font-weight: 500; }
+  td.num, th.num { text-align: right; }
+  .scroll { overflow-x: auto; }
+  .pct { display: flex; align-items: center; gap: 8px; }
+  .meter { flex: 1; height: 8px; background: var(--grid); border-radius: 4px; min-width: 80px; overflow: hidden; }
+  .meter span { display: block; height: 100%; background: var(--series-1); border-radius: 4px; }
+  .flag { display: inline-block; padding: 0 6px; border-radius: 4px; background: var(--warn-bg); color: var(--warn-ink); font-size: 12px; }
+  .tag { display: inline-block; padding: 0 6px; margin: 1px 2px 1px 0; border-radius: 4px; border: 1px solid var(--border); color: var(--text-secondary); font-size: 12px; }
+  pre { white-space: pre-wrap; word-break: break-word; font-size: 13px; background: var(--surface-0);
+        border: 1px solid var(--border); border-radius: 8px; padding: 12px; max-height: 480px; overflow: auto; }
+  button { font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);
+           background: var(--surface-1); color: var(--text-primary); cursor: pointer; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Open-source delivery tracker</h1>
+      <p class="sub" id="subtitle"></p>
+    </div>
+    <label class="muted">Scope <select id="scope"></select></label>
+  </header>
+
+  <section class="tiles" id="tiles" aria-label="Headline metrics"></section>
+
+  <div class="grid">
+    <div class="card"><h2>Merged PRs per week</h2><p class="muted">Throughput: PRs merged, by week starting Monday.</p>
+      <div class="chart"><canvas id="c-merged" role="img" aria-label="Merged PRs per week"></canvas></div><div id="t-merged"></div></div>
+    <div class="card"><h2>Issues opened vs closed per week</h2><p class="muted">If opened stays above closed, the backlog is growing.</p>
+      <div class="chart"><canvas id="c-flow" role="img" aria-label="Issues opened and closed per week"></canvas></div><div id="t-flow"></div></div>
+    <div class="card"><h2>PR cycle time</h2><p class="muted">Opened to merged, for PRs merged in the window.</p>
+      <div class="chart"><canvas id="c-cycle" role="img" aria-label="PR cycle time distribution"></canvas></div><div id="t-cycle"></div></div>
+    <div class="card"><h2>Open work by age</h2><p class="muted">Everything still open, by time since it was opened.</p>
+      <div class="chart"><canvas id="c-age" role="img" aria-label="Open work by age"></canvas></div><div id="t-age"></div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px"><h2>Milestones</h2><div class="scroll" id="milestones"></div></div>
+
+  <div class="grid">
+    <div class="card"><h2>Stale PRs</h2><p class="muted" id="stale-note"></p><div class="scroll" id="stale"></div></div>
+    <div class="card"><h2>Blocked or needs a decision</h2><p class="muted">Open items whose labels match the blocked or decision patterns in config.json.</p><div class="scroll" id="blocked"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="row"><h2>Weekly status note (draft)</h2><button id="copy">Copy markdown</button></div>
+    <p class="muted">Auto-drafted from the same data, for all repos. A starting point to edit, not a finished report.</p>
+    <pre id="note"></pre>
+  </div>
+  <p class="muted">Public GitHub data only, read via the REST API. Definitions are in the README.</p>
+</main>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const na = (v, unit = "") => v === null || v === undefined ? "n/a" : v + unit;
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const charts = {};
+
+function table(headers, rows, numericFrom = 1) {
+  const head = headers.map((h, i) => `<th${i >= numericFrom ? ' class="num"' : ""}>${esc(h)}</th>`).join("");
+  const body = rows.map(r => "<tr>" + r.map((c, i) => `<td${i >= numericFrom ? ' class="num"' : ""}>${esc(c)}</td>`).join("") + "</tr>").join("");
+  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+const dataTable = (headers, rows) => `<details><summary>Show data</summary><div class="scroll">${table(headers, rows)}</div></details>`;
+
+function chart(id, type, labels, series, stacked = false) {
+  if (charts[id]) charts[id].destroy();
+  const grid = css("--grid"), ink = css("--text-secondary");
+  charts[id] = new Chart(document.getElementById(id), {
+    type,
+    data: { labels, datasets: series.map(s => ({
+      label: s.label, data: s.data, borderColor: css(s.color), backgroundColor: css(s.color),
+      borderWidth: type === "line" ? 2 : 0, borderRadius: 4, borderSkipped: "start",
+      pointRadius: 0, pointHoverRadius: 5, tension: 0, maxBarThickness: 28,
+    })) },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: { legend: { display: series.length > 1, labels: { color: ink, boxWidth: 12, boxHeight: 12 } },
+                 tooltip: { mode: "index", intersect: false } },
+      scales: {
+        x: { stacked, grid: { display: false }, ticks: { color: ink, maxRotation: 0, autoSkipPadding: 12 } },
+        y: { stacked, beginAtZero: true, grid: { color: grid }, border: { display: false },
+             ticks: { color: ink, precision: 0 } },
+      },
+    },
+  });
+}
+
+function itemRows(items, withLabels) {
+  if (!items.length) return '<p class="muted">None.</p>';
+  const rows = items.map(i => `<tr><td><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.repo.split("/")[1])}#${i.number}</a></td>
+    <td>${esc(i.title)}${withLabels ? "<br>" + i.labels.map(l => `<span class="tag">${esc(l)}</span>`).join("") : ""}</td>
+    <td class="num">${i.age_days}d</td><td class="num">${i.idle_days}d</td></tr>`).join("");
+  return `<table><thead><tr><th>Item</th><th>Title</th><th class="num">Age</th><th class="num">Idle</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function render(name) {
+  const scope = DATA.scopes[name], s = scope.summary, cfg = DATA.config;
+  const tiles = [
+    ["Merged PRs", s.merged_prs, `${s.closed_unmerged_prs} closed without merge`],
+    ["Median PR cycle time", na(s.cycle_median_days, " d"), `p85 ${na(s.cycle_p85_days, " d")}`],
+    ["Median time to first review", na(s.review_median_hours, " h"),
+      s.review_sample ? `before merge; ${na(s.reviewed_share_pct, "%")} of ${s.review_sample} recent merged PRs had one` : "no PRs checked"],
+    ["Open work", s.open_prs + s.open_issues, `${s.open_prs} PRs, ${s.open_issues} issues`],
+    ["Stale", s.stale, `${s.stale_open_prs} PRs, ${s.stale - s.stale_open_prs} issues idle ${cfg.stale_days}+ days`],
+    ["Top author share", na(s.top_author_share_pct, "%"), `of merged PRs; ${s.merged_authors} authors`],
+    ["Blocked / decision", `${s.blocked} / ${s.needs_decision}`, "by label"],
+  ];
+  document.getElementById("tiles").innerHTML = tiles.map(([l, v, n]) =>
+    `<div class="tile"><div class="label">${esc(l)}</div><div class="value">${esc(v)}</div><div class="note">${esc(n)}</div></div>`).join("");
+
+  const weeks = scope.weekly.map(w => w.week.slice(5));
+  chart("c-merged", "bar", weeks, [{ label: "Merged PRs", data: scope.weekly.map(w => w.merged_prs), color: "--series-1" }]);
+  document.getElementById("t-merged").innerHTML = dataTable(["Week starting", "Merged PRs"], scope.weekly.map(w => [w.week, w.merged_prs]));
+  chart("c-flow", "line", weeks, [
+    { label: "Opened", data: scope.weekly.map(w => w.issues_opened), color: "--series-2" },
+    { label: "Closed", data: scope.weekly.map(w => w.issues_closed), color: "--series-1" }]);
+  document.getElementById("t-flow").innerHTML = dataTable(["Week starting", "Opened", "Closed"], scope.weekly.map(w => [w.week, w.issues_opened, w.issues_closed]));
+  chart("c-cycle", "bar", scope.cycle_distribution.map(b => b.bucket), [{ label: "PRs", data: scope.cycle_distribution.map(b => b.prs), color: "--series-1" }]);
+  document.getElementById("t-cycle").innerHTML = dataTable(["Cycle time", "PRs"], scope.cycle_distribution.map(b => [b.bucket, b.prs]));
+  chart("c-age", "bar", scope.open_by_age.map(b => b.bucket), [
+    { label: "PRs", data: scope.open_by_age.map(b => b.pr), color: "--series-1" },
+    { label: "Issues", data: scope.open_by_age.map(b => b.issue), color: "--series-2" }], true);
+  document.getElementById("t-age").innerHTML = dataTable(["Age", "PRs", "Issues"], scope.open_by_age.map(b => [b.bucket, b.pr, b.issue]));
+
+  const open = scope.milestones.filter(m => m.state === "open");
+  const recentClosed = scope.milestones.filter(m => m.state === "closed").sort((a, b) => (b.closed_at || "").localeCompare(a.closed_at || "")).slice(0, 3);
+  const ms = open.concat(recentClosed);
+  document.getElementById("milestones").innerHTML = ms.length ? `<table><thead><tr><th>Milestone</th><th>Repo</th><th>Progress</th>
+    <th class="num">Open</th><th class="num">Closed</th><th>Due</th><th>State</th></tr></thead><tbody>${ms.map(m => `<tr>
+    <td><a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.title)}</a></td><td>${esc(m.repo)}</td>
+    <td><div class="pct"><div class="meter" aria-hidden="true"><span style="width:${m.progress_pct}%"></span></div>${m.progress_pct}%</div></td>
+    <td class="num">${m.open}</td><td class="num">${m.closed}</td>
+    <td>${m.due_on ? esc(m.due_on) : '<span class="muted">no date</span>'} ${m.overdue ? '<span class="flag">overdue</span>' : ""}</td>
+    <td>${m.state === "open" ? "open" : "closed " + esc(m.closed_at || "")}</td></tr>`).join("")}</tbody></table>
+    <p class="muted">Open milestones, plus the three most recently closed.</p>`
+    : '<p class="muted">This scope has no GitHub milestones. Jane Street\'s repos mirror an internal monorepo and don\'t use them; plan-vs-actual has to come from elsewhere.</p>';
+
+  document.getElementById("stale-note").textContent = `${s.stale_open_prs} open PRs with no activity for ${cfg.stale_days}+ days; the 10 idle longest are shown.`;
+  document.getElementById("stale").innerHTML = itemRows(scope.stale_prs, false);
+  const seen = new Set();
+  const flagged = scope.decision_items.concat(scope.blocked_items).filter(i => !seen.has(i.url) && seen.add(i.url));
+  document.getElementById("blocked").innerHTML = itemRows(flagged, true);
+}
+
+const select = document.getElementById("scope");
+select.innerHTML = Object.keys(DATA.scopes).map(k => `<option>${esc(k)}</option>`).join("");
+document.getElementById("subtitle").textContent =
+  `${DATA.repos.join(", ")} · last ${DATA.config.window_days} days to ${DATA.as_of}`;
+document.getElementById("note").textContent = DATA.status_note;
+document.getElementById("copy").onclick = async e => {
+  try { await navigator.clipboard.writeText(DATA.status_note); e.target.textContent = "Copied"; }
+  catch { e.target.textContent = "Copy failed"; }
+};
+select.onchange = () => render(select.value);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => render(select.value));
+render(select.value);
+</script>
+</body>
+</html>
