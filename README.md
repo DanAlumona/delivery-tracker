@@ -9,6 +9,8 @@ A small, read-only tool that answers the questions a technical product or progra
 - **What's at risk?** Stale PRs, growing backlogs, milestones behind schedule, slowing cycle time.
 - **What needs a decision?** Approved PRs left unmerged, items labelled blocked or "needs discussion".
 
+**Why it exists.** Weekly delivery updates are usually put together by hand from GitHub and chat. They take an hour or more, vary with whoever writes them, and report activity rather than risk, so slips surface late. The signals are already in the tracker; this tool turns them into a consistent draft in minutes, leaving the person time to add context and push decisions. It's built for a technical program or product manager running a multi-team engineering effort; open-source maintainers checking project health can use it too.
+
 It pulls issues, pull requests and milestones from 1-3 public GitHub repos and writes a static dashboard, two CSVs and an auto-drafted weekly status note. By default it tracks Jane Street's open-source OCaml libraries [`janestreet/core`](https://github.com/janestreet/core) and [`janestreet/base`](https://github.com/janestreet/base), plus [`ocaml/dune`](https://github.com/ocaml/dune), the OCaml build system their packages build with. Any public repo works.
 
 | File | What it does |
