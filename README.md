@@ -1,6 +1,6 @@
 # Open-source delivery tracker
 
-Built by [Daniel Alumona](https://www.linkedin.com/in/danielalumona).
+Built by [Daniel Alumona](https://www.linkedin.com/in/danielalumona). Key numbers were spot-checked against GitHub (see [Sample run](#sample-run-90-days-to-1-nov-2026)).
 
 A small, read-only tool that answers the questions a technical product or program manager asks every week, using real public engineering data:
 
