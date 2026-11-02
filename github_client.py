@@ -67,6 +67,9 @@ class GitHubClient:
             if err.code == 403 and err.headers.get("X-RateLimit-Remaining") == "0":
                 raise RuntimeError("GitHub rate limit reached. Wait an hour, use --offline, "
                                    "or pass a token (GITHUB_TOKEN or --gh-token).") from err
+            if err.code == 404:
+                raise RuntimeError(f"Not found: {url}. Check the repo name (owner/name); "
+                                   "only public repos work.") from err
             raise
         self.calls += 1
         match = re.search(r'<([^>]+)>;\s*rel="next"', link)

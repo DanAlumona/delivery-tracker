@@ -179,4 +179,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except RuntimeError as err:
+        raise SystemExit(f"error: {err}")
